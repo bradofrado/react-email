@@ -1,3 +1,4 @@
+import { fonts } from "@/utils/fonts";
 import {
   Body,
   Button,
@@ -15,6 +16,7 @@ import {
   Text,
   Tailwind,
 } from "@react-email/components";
+import { HarmonySetup } from "harmony-ai-editor";
 import * as React from "react";
 
 interface VercelInviteUserEmailProps {

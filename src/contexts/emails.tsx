@@ -46,6 +46,7 @@ export const useEmails = () => {
 export const EmailsProvider = (props: {
   initialEmailsDirectoryMetadata: EmailsDirectory;
   children: React.ReactNode;
+  branchId: string | undefined
 }) => {
   const [emailsDirectoryMetadata, setEmailsDirectoryMetadata] =
     useState<EmailsDirectory>(props.initialEmailsDirectoryMetadata);
@@ -87,7 +88,7 @@ export const EmailsProvider = (props: {
         const lastResult = renderingResultPerEmailPath[pathForChangedEmail];
 
         if (typeof lastResult !== 'undefined') {
-          const renderingResult = await renderEmailByPath(pathForChangedEmail);
+          const renderingResult = await renderEmailByPath(pathForChangedEmail, props.branchId);
 
           setRenderingResultPerEmailPath((map) => ({
             ...map,

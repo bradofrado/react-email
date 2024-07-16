@@ -18,8 +18,9 @@ export type EmailRenderingResult =
 
 export const renderEmailByPath = async (
   emailPath: string,
+  branchId: string | undefined,
 ): Promise<EmailRenderingResult> => {
-  const result = await getEmailComponent(emailPath);
+  const result = await getEmailComponent(emailPath, branchId);
 
   if ('error' in result) {
     return { error: result.error };
@@ -34,10 +35,10 @@ export const renderEmailByPath = async (
   const previewProps = Email.PreviewProps || {};
   const EmailComponent = Email as React.FC;
   try {
-    const markup = await renderAsync(<EmailComponent {...previewProps} />, {
+    const markup = await renderAsync(EmailComponent({...previewProps}), {
       pretty: true,
     });
-    const plainText = await renderAsync(<EmailComponent {...previewProps} />, {
+    const plainText = await renderAsync(EmailComponent({...previewProps}), {
       plainText: true,
     });
 

@@ -9,9 +9,11 @@ import type { ErrorObject } from './types/error-object';
 import { improveErrorWithSourceMap } from './improve-error-with-sourcemap';
 import { staticNodeModulesForVM } from './static-node-modules-for-vm';
 import { renderResolver } from './render-resolver-esbuild-plugin';
+import {promises as fs} from 'node:fs'
 
 export const getEmailComponent = async (
   emailPath: string,
+  branchId: string | undefined
 ): Promise<
   | {
       emailComponent: EmailComponent;
@@ -24,10 +26,23 @@ export const getEmailComponent = async (
 > => {
   let outputFiles: OutputFile[];
   try {
+    const rootDir = path.join(emailPath, '../../../..')
+    const updates = branchId ? await new Promise<{content: string, path: string}[] | undefined>((resolve) => {
+      fetch(`http://localhost:4200/trpc/editor.getPublishedFiles?batch=1&input=%7B%220%22%3A%7B%22json%22%3A%7B%22branchId%22%3A%22${branchId}%22%7D%7D%7D`).then(result => result.json().then(json => resolve(json[0].result.data.json as {content: string, path: string}[])))
+    }) : undefined
+    const readFile = async (pathToFile: string) => {
+      const serverFile = updates?.find(update => update.path === pathToFile.split(`${rootDir}/`)[1])?.content
+      if (serverFile) {
+        return serverFile
+      }
+
+      return fs.readFile(pathToFile, 'utf8')
+    }
+    
     const buildData = await build({
       bundle: true,
       entryPoints: [emailPath],
-      plugins: [renderResolver([emailPath])],
+      plugins: [renderResolver([emailPath], readFile, !Boolean(updates))],
       platform: 'node',
       write: false,
 
@@ -58,6 +73,45 @@ export const getEmailComponent = async (
   const bundledEmailFile = outputFiles[1]!;
   const builtEmailCode = bundledEmailFile.text;
 
+  const sourceMapToEmail = JSON.parse(sourceMapFile.text) as RawSourceMap;
+  // because it will have a path like <tsconfigLocation>/stdout/email.js.map
+  sourceMapToEmail.sourceRoot = path.resolve(sourceMapFile.path, '../..');
+  sourceMapToEmail.sources = sourceMapToEmail.sources.map((source) =>
+    path.resolve(sourceMapFile.path, '..', source),
+  );
+  try {
+    const {emailComponent, renderAsync} = runInContext({code: builtEmailCode, path: emailPath});
+
+    if (emailComponent === undefined) {
+      return {
+        error: improveErrorWithSourceMap(
+          new Error(
+            `The email component at ${emailPath} does not contain a default export`,
+          ),
+          emailPath,
+          sourceMapToEmail,
+        ),
+      };
+    }
+  
+    return {
+      emailComponent,
+      renderAsync,
+  
+      sourceMapToOriginalFile: sourceMapToEmail,
+    };
+  } catch (exception) {
+    const error = exception as Error;
+
+    error.stack &&= error.stack.split('at Script.runInContext (node:vm')[0];
+
+    return {
+      error: improveErrorWithSourceMap(error, emailPath, sourceMapToEmail),
+    };
+  }
+};
+
+export const runInContext = ({code: emailCode, path: emailPath}: {code: string, path: string}) => {
   const fakeContext = {
     ...global,
     console,
@@ -70,6 +124,7 @@ export const getEmailComponent = async (
     URL,
     URLSearchParams,
     Headers,
+    AbortController,
     module: {
       exports: {
         default: undefined as unknown,
@@ -97,40 +152,10 @@ export const getEmailComponent = async (
     },
     process,
   };
-  const sourceMapToEmail = JSON.parse(sourceMapFile.text) as RawSourceMap;
-  // because it will have a path like <tsconfigLocation>/stdout/email.js.map
-  sourceMapToEmail.sourceRoot = path.resolve(sourceMapFile.path, '../..');
-  sourceMapToEmail.sources = sourceMapToEmail.sources.map((source) =>
-    path.resolve(sourceMapFile.path, '..', source),
-  );
-  try {
-    vm.runInNewContext(builtEmailCode, fakeContext, { filename: emailPath });
-  } catch (exception) {
-    const error = exception as Error;
-
-    error.stack &&= error.stack.split('at Script.runInContext (node:vm')[0];
-
-    return {
-      error: improveErrorWithSourceMap(error, emailPath, sourceMapToEmail),
-    };
-  }
-
-  if (fakeContext.module.exports.default === undefined) {
-    return {
-      error: improveErrorWithSourceMap(
-        new Error(
-          `The email component at ${emailPath} does not contain a default export`,
-        ),
-        emailPath,
-        sourceMapToEmail,
-      ),
-    };
-  }
+  vm.runInNewContext(emailCode, fakeContext, { filename: emailPath });
 
   return {
-    emailComponent: fakeContext.module.exports.default as EmailComponent,
+    emailComponent: fakeContext.module.exports.default as EmailComponent | undefined,
     renderAsync: fakeContext.module.exports.renderAsync as typeof renderAsync,
-
-    sourceMapToOriginalFile: sourceMapToEmail,
-  };
-};
+  }
+}

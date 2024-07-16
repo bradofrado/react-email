@@ -11,6 +11,7 @@ import { Tooltip } from '../../../components/tooltip';
 import { useEmails } from '../../../contexts/emails';
 import { useRenderingMetadata } from '../../../hooks/use-rendering-metadata';
 import { RenderingError } from './rendering-error';
+import VercelInviteUserEmail from '@/components/emails/vercel-invite-user';
 
 interface PreviewProps {
   slug: string;
@@ -90,20 +91,66 @@ const Preview = ({
         {/* If this is undefined means that the initial server render of the email had errors */}
         {hasNoErrors ? (
           <>
-            {activeView === 'desktop' && (
+            {activeView === 'desktop' && (<div>
               <iframe
                 className="w-full bg-white h-[calc(100vh_-_140px)] lg:h-[calc(100vh_-_70px)]"
                 srcDoc={renderedEmailMetadata.markup}
                 title={slug}
               />
+              <div className="flex gap-6 mx-auto p-6 max-w-3xl">
+                <Tooltip.Provider>
+                  <CodeContainer
+                    activeLang={activeLang}
+                    markups={[
+                      {
+                        language: 'jsx',
+                        content: renderedEmailMetadata.reactMarkup,
+                      },
+                      {
+                        language: 'markup',
+                        content: renderedEmailMetadata.markup.replaceAll(/\s*data-harmony-id="[^"]*"/g,''),
+                      },
+                      {
+                        language: 'markdown',
+                        content: renderedEmailMetadata.plainText,
+                      },
+                    ]}
+                    setActiveLang={handleLangChange}
+                  />
+                </Tooltip.Provider>
+              </div>
+              </div>
             )}
 
-            {activeView === 'mobile' && (
+            {activeView === 'mobile' && (<div>
               <iframe
                 className="w-[360px] bg-white h-[calc(100vh_-_140px)] lg:h-[calc(100vh_-_70px)] mx-auto"
                 srcDoc={renderedEmailMetadata.markup}
                 title={slug}
               />
+              <div className="flex gap-6 mx-auto p-6 max-w-3xl">
+                <Tooltip.Provider>
+                  <CodeContainer
+                    activeLang={activeLang}
+                    markups={[
+                      {
+                        language: 'jsx',
+                        content: renderedEmailMetadata.reactMarkup,
+                      },
+                      {
+                        language: 'markup',
+                        content: renderedEmailMetadata.markup.replaceAll(/data-harmony-id="[^"]*"/g,''),
+                      },
+                      {
+                        language: 'markdown',
+                        content: renderedEmailMetadata.plainText,
+                      },
+                    ]}
+                    setActiveLang={handleLangChange}
+                  />
+                </Tooltip.Provider>
+              </div>
+              </div>
             )}
 
             {activeView === 'source' && (

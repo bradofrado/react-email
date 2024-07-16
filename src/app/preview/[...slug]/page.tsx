@@ -14,7 +14,7 @@ export interface PreviewParams {
   slug: string[];
 }
 
-const Page = async ({ params }: { params: PreviewParams }) => {
+const Page = async ({ params, searchParams }: { params: PreviewParams, searchParams?: {'branch-id'?: string} }) => {
   // will come in here as segments of a relative path to the email
   // ex: ['authentication', 'verify-password.tsx']
   const slug = params.slug.join('/');
@@ -41,7 +41,7 @@ This is most likely not an issue with the preview server. Maybe there was a typo
     throw exception;
   }
 
-  const emailRenderingResult = await renderEmailByPath(emailPath);
+  const emailRenderingResult = await renderEmailByPath(emailPath, searchParams?.['branch-id']);
 
   if (
     'error' in emailRenderingResult &&

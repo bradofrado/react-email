@@ -1,6 +1,8 @@
 import path from 'node:path';
 import { promises as fs } from 'node:fs';
 import type { Loader, PluginBuild, ResolveOptions } from 'esbuild';
+import { transformSync } from '@babel/core';
+import babelPlugin from 'babel-plugin-harmony';
 
 function escapeStringForRegex(string: string) {
   return string.replace(/[|\\{}()[\]^$+*?.]/g, '\\$&').replace(/-/g, '\\x2d');
@@ -14,7 +16,7 @@ function escapeStringForRegex(string: string) {
  * This avoids multiple versions of React being involved, i.e., the version
  * in the CLI vs. the version the user has on their emails.
  */
-export const renderResolver = (emailTemplates: string[]) => ({
+export const renderResolver = (emailTemplates: string[], readFile: (path: string) => Promise<string>, transformFile: boolean) => ({
   name: 'render-resolver',
   setup: (b: PluginBuild) => {
     b.onLoad(
@@ -26,8 +28,19 @@ export const renderResolver = (emailTemplates: string[]) => ({
         ),
       },
       async ({ path: pathToFile }) => {
+        const contents = await readFile(pathToFile)
+        const res = transformFile ? transformSync(contents, {
+          babelrc: false,
+          filename: pathToFile,
+          sourceType: 'module',
+          parserOpts: {
+              plugins: ['jsx', 'typescript']
+          },
+          plugins: [[babelPlugin, {rootDir: path.join(pathToFile, '../../../..')}]]
+        }) : {code: contents};
+
         return {
-          contents: `${await fs.readFile(pathToFile, 'utf8')};
+          contents: `${res?.code};
           export { renderAsync } from 'react-email-module-that-will-export-render'
         `,
           loader: path.extname(pathToFile).slice(1) as Loader,
