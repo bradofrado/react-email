@@ -3,10 +3,12 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "build": "tsup && node cli/index.js build",
     "dev": "tsup --watch",
-    "build": "next build",
-    "start": "next start",
-    "lint": "next lint"
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "clean": "rm -rf dist",
+    "lint": "eslint . && tsc"
   },
   "dependencies": {
     "@babel/core": "7.24.5",
@@ -35,7 +37,7 @@
     "eslint-config-turbo": "1.10.12",
     "framer-motion": "10.17.4",
     "glob": "10.3.4",
-    "harmony-ai-editor": "^0.12.8",
+    "harmony-ai-editor": "^0.12.12",
     "harmony-ai-plugin": "^0.2.5",
     "log-symbols": "4.1.0",
     "mime-types": "2.1.35",

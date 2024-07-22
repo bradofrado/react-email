@@ -231,18 +231,21 @@ export const build = async ({
     }
 
     spinner.text = 'Copying preview app from CLI to `.react-email`';
-    await fs.promises.cp(cliPacakgeLocation, builtPreviewAppPath, {
-      recursive: true,
-      filter: (source: string) => {
-        // do not copy the CLI files
-        return (
-          !/(\/|\\)cli(\/|\\)?/.test(source) &&
-          !/(\/|\\)\.next(\/|\\)?/.test(source) &&
-          !/(\/|\\)\.turbo(\/|\\)?/.test(source) &&
-          !/(\/|\\)node_modules(\/|\\)?$/.test(source)
-        );
-      },
-    });
+    fs.readdirSync(cliPacakgeLocation,{withFileTypes: true}).filter(
+        (entry) => {
+            const fullsrc = path.resolve(cliPacakgeLocation + path.sep + entry.name);
+            const fulldest= path.resolve(builtPreviewAppPath + path.sep + entry.name);
+            if(!/(\/|\\)cli(\/|\\)?/.test(fullsrc) &&
+            !/(\/|\\)\.next(\/|\\)?/.test(fullsrc) &&
+            !/(\/|\\)\.git(\/|\\)?/.test(fullsrc) &&
+            !/(\/|\\)\.turbo(\/|\\)?/.test(fullsrc) &&
+            !/(\/|\\)node_modules(\/|\\)?$/.test(fullsrc) &&
+            !/(\/|\\)\.react-email(\/|\\)?/.test(fullsrc))
+                fs.cpSync(fullsrc, fulldest, {recursive: true});
+            return true;
+        }
+    );
+      
 
     if (fs.existsSync(staticPath)) {
       spinner.text =
@@ -251,6 +254,7 @@ export const build = async ({
         builtPreviewAppPath,
         './public/static',
       );
+      
       await fs.promises.cp(staticPath, builtStaticDirectory, {
         recursive: true,
       });

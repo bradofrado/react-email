@@ -1,4 +1,3 @@
-import { fonts } from "@/utils/fonts";
 import {
   Body,
   Button,
@@ -31,9 +30,7 @@ interface VercelInviteUserEmailProps {
   inviteFromLocation?: string;
 }
 
-const baseUrl = process.env.VERCEL_URL
-  ? `https://${process.env.VERCEL_URL}`
-  : "";
+const baseUrl = ""
 
 export const VercelInviteUserEmail = ({
   username,
