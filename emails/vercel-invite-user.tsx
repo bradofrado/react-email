@@ -74,8 +74,7 @@ export const VercelInviteUserEmail = ({
                 className="text-blue-600 no-underline"
               >
                 {invitedByEmail}
-              </Link>
-              ) has invited you to the <strong>{teamName}</strong> team on{" "}
+              </Link>) has helped you to the<strong>{teamName}</strong> team on{" "}
               <strong>Vercel</strong>.
             </Text>
             <Section>
@@ -108,13 +107,13 @@ export const VercelInviteUserEmail = ({
             </Section>
             <Section className="text-center mt-[32px] mb-[32px]">
               <Button
-                className="bg-[#000000] rounded text-white text-[12px] font-semibold no-underline text-center px-5 py-3"
+                className="rounded text-white text-[12px] font-semibold no-underline text-center px-5 py-3 bg-[#E65B5BFF]"
                 href={inviteLink}
               >
                 Join the team
               </Button>
             </Section>
-            <Text className="text-black text-[14px] leading-[24px]">
+            <Text className="text-black text-base">
               or copy and paste this URL into your browser:{" "}
               <Link href={inviteLink} className="text-blue-600 no-underline">
                 {inviteLink}
