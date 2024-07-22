@@ -11,7 +11,6 @@ import { Tooltip } from '../../../components/tooltip';
 import { useEmails } from '../../../contexts/emails';
 import { useRenderingMetadata } from '../../../hooks/use-rendering-metadata';
 import { RenderingError } from './rendering-error';
-import VercelInviteUserEmail from '@/components/emails/vercel-invite-user';
 
 interface PreviewProps {
   slug: string;
@@ -97,28 +96,6 @@ const Preview = ({
                 srcDoc={renderedEmailMetadata.markup}
                 title={slug}
               />
-              <div className="flex gap-6 mx-auto p-6 max-w-3xl">
-                <Tooltip.Provider>
-                  <CodeContainer
-                    activeLang={activeLang}
-                    markups={[
-                      {
-                        language: 'jsx',
-                        content: renderedEmailMetadata.reactMarkup,
-                      },
-                      {
-                        language: 'markup',
-                        content: renderedEmailMetadata.markup.replaceAll(/\s*data-harmony-id="[^"]*"/g,''),
-                      },
-                      {
-                        language: 'markdown',
-                        content: renderedEmailMetadata.plainText,
-                      },
-                    ]}
-                    setActiveLang={handleLangChange}
-                  />
-                </Tooltip.Provider>
-              </div>
               </div>
             )}
 
@@ -128,28 +105,6 @@ const Preview = ({
                 srcDoc={renderedEmailMetadata.markup}
                 title={slug}
               />
-              <div className="flex gap-6 mx-auto p-6 max-w-3xl">
-                <Tooltip.Provider>
-                  <CodeContainer
-                    activeLang={activeLang}
-                    markups={[
-                      {
-                        language: 'jsx',
-                        content: renderedEmailMetadata.reactMarkup,
-                      },
-                      {
-                        language: 'markup',
-                        content: renderedEmailMetadata.markup.replaceAll(/data-harmony-id="[^"]*"/g,''),
-                      },
-                      {
-                        language: 'markdown',
-                        content: renderedEmailMetadata.plainText,
-                      },
-                    ]}
-                    setActiveLang={handleLangChange}
-                  />
-                </Tooltip.Provider>
-              </div>
               </div>
             )}
 
@@ -161,11 +116,11 @@ const Preview = ({
                     markups={[
                       {
                         language: 'jsx',
-                        content: renderedEmailMetadata.reactMarkup,
+                        content: renderedEmailMetadata.reactMarkup.replaceAll(/\s*data-harmony-id="[^"]*"/g,''),
                       },
                       {
                         language: 'markup',
-                        content: renderedEmailMetadata.markup,
+                        content: renderedEmailMetadata.markup.replaceAll(/\s*data-harmony-id="[^"]*"/g,''),
                       },
                       {
                         language: 'markdown',

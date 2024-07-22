@@ -26,7 +26,7 @@ export const getEmailComponent = async (
 > => {
   let outputFiles: OutputFile[];
   try {
-    const rootDir = path.join(emailPath, '../../../..')
+    const rootDir = path.join(emailPath, '../..')
     const updates = branchId ? await new Promise<{content: string, path: string}[] | undefined>((resolve) => {
       fetch(`http://localhost:4200/trpc/editor.getPublishedFiles?batch=1&input=%7B%220%22%3A%7B%22json%22%3A%7B%22branchId%22%3A%22${branchId}%22%7D%7D%7D`).then(result => result.json().then(json => resolve(json[0].result.data.json as {content: string, path: string}[])))
     }) : undefined

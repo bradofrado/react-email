@@ -36,7 +36,7 @@ export const renderResolver = (emailTemplates: string[], readFile: (path: string
           parserOpts: {
               plugins: ['jsx', 'typescript']
           },
-          plugins: [[babelPlugin, {rootDir: path.join(pathToFile, '../../../..')}]]
+          plugins: [[babelPlugin, {rootDir: path.join(pathToFile, '../..')}]]
         }) : {code: contents};
 
         return {
